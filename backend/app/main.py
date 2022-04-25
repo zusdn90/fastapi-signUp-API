@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.openapi.utils import get_openapi
-from fastapi.openapi.docs import get_swagger_ui_html
-from mangum import Mangum  # type:ignore
+from fastapi.openapi.docs import get_swagger_ui_html# type:ignore
 from app.core.event_handlers import start_app_handler, stop_app_handler
 from app.core.utils.logger import base_logger
 from app.api.router import api_router
