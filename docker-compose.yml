@@ -1,12 +1,28 @@
 version: '3.3'
 
 services:
-  api:
+  api:    
     build:
       context: .
       dockerfile: ./Dockerfile
+    depends_on:      
+      - db
     volumes:
       - ./backend:/backend
-    command: uvicorn app.main:app --reload --host=0.0.0.0 --port=8005
+    command: ./scripts/start.sh
+    # entrypoint: ./scripts/entrypoint.sh 
     ports:
       - 8000:8005
+    restart: always
+    env_file: .env
+
+  db:
+    image: postgres:12
+    container_name: postgres    
+    env_file: .env
+    ports:
+        - "5431:5432"
+    volumes:
+        - ./data/:/var/lib/postgresql    
+    
+

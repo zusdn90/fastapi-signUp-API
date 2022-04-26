@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/Users/hyunoozzing/.pyenv/versions/fastapi/bin/python",
+    "python.pythonPath": "/Users/hwhong/.pyenv/versions/fastapi/bin/python",
     "python.testing.pytestArgs": [
         "."
     ],

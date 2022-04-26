@@ -2,13 +2,14 @@ from sqlalchemy import create_engine, engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from contextlib import contextmanager
+from app.core.common.config import settings
 
-SQLALCHEMY_DATABASE_URI = "sqlite:///./sql_app.db"
-print(f"db connection url : {SQLALCHEMY_DATABASE_URI}")
+
+print(f"db connection url : {settings.SQLALCHEMY_DATABASE_URI}")
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URI, connect_args={"check_same_thread": False}
-)
+    settings.SQLALCHEMY_DATABASE_URI, pool_pre_ping=True, echo=False
+)  # pool_pre_ping -> select 1 같은 간단한 쿼리문으로 connection 확인
 db_session = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 

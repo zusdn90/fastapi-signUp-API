@@ -10,3 +10,6 @@ pytest-asyncio==0.18.1
 black==21.5b1
 fastapi-camelcase==1.0.5
 PyJWT==2.3.0
+psycopg2-binary==2.9.1
+alembic==1.7.1
+django-environ==0.8.1

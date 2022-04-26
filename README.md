@@ -14,12 +14,14 @@
 │   |    └── schemas     : pydantic 모델
 │   |    └── tests       : test 코드
 |   ├── main.py          : FastAPI main모듈
+│   └── migrations       : db migration 파일
+│   └── scripts          : shell 파일
 ```
 
-### 로컬 서버 구동
+### 로컬 서버 구동 / DB 테이블 새성
 ```
-1. cd backend && pip install -r requirements.txt
+1. docker-compose build && docker-compose up
 ```
 ```
-2. uvicorn app.main:app --reload --host=0.0.0.0 --port=8005
+2. cd backend/app/scripts ./migratinos.sh
 ```
