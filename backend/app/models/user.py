@@ -32,3 +32,20 @@ class User(Base, BaseMixin):
 
     def __repr__(self) -> str:
         return self.name
+
+
+class UserAuth(Base, BaseMixin):
+    __tablename__ = "users_auth"
+
+    name: Union[Any, Column] = Column(String(20), nullable=False, comment="이름")
+    phone_number: Union[Any, Column] = Column(
+        String(20), unique=True, nullable=False, comment="전화번호"
+    )
+    email: Union[Any, Column] = Column(
+        String(50), unique=True, nullable=False, comment="이메일"
+    )
+    password: Union[Any, Column] = Column(String(50), nullable=False, comment="비밀번호")
+    auth_text: Union[Any, Column] = Column(String(10), nullable=False, comment="인증값")
+
+    def __repr__(self) -> str:
+        return f"{self.name}_{self.auth_text}"
