@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "backend:app/api/v1/users.randint (python3.8)",
+            "invokeTarget": {
+                "target": "code",
+                "projectRoot": "${workspaceFolder}/backend",
+                "lambdaHandler": "app/api/v1/users.randint"
+            },
+            "lambda": {
+                "runtime": "python3.8",
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
             "name": "Python: FastAPI",
             "type": "python",
             "request": "launch",
@@ -19,7 +34,7 @@
             "env": {
                 "STAGE": "local"
             },
-            "justMyCode": false, // third party 라이브러리 디버깅 용
+            "justMyCode": false,
             "jinja": true
         }
     ]

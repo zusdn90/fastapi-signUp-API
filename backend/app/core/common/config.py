@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     # DATABASE URI 설정
     #######################
     if STAGE == "local":
-        POSTGRES_SERVER: str = "127.0.0.1:5431"
+        POSTGRES_SERVER: str = "host.docker.internal:5431"
         POSTGRES_USER: str = "admin"
         POSTGRES_PASSWORD: str = "admin1234"
         POSTGRES_DB: str = "postgres"
