@@ -5,15 +5,9 @@ from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy import (
     Column,
     Integer,
-    String,
     DateTime,
     func,
-    Enum,
-    Boolean,
-    ForeignKey,
 )
-from sqlalchemy.orm import Session, relationship
-
 
 @as_declarative()
 class Base:

@@ -1,6 +1,4 @@
-from datetime import datetime
-from typing import List, Optional, Dict
-from enum import Enum
+from typing import Optional
 
 from pydantic import Field
 from pydantic.main import BaseModel
@@ -11,7 +9,13 @@ class Token(BaseModel):
 
 
 class UserToken(BaseModel):
-    token: str = None
+    name: Optional[str] = Field(None, description="이름")
+    email: Optional[str] = Field(None, description="이메일")
+    nick_name: Optional[str] = Field(None, description="닉네임")
+    phone_number: Optional[str] = Field(None, description="전화번호")
+
+    class Config:
+        orm_mode = True
 
 
 class UserFindPwd(BaseModel):

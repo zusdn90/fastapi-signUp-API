@@ -3,7 +3,6 @@ import bcrypt
 
 from sqlalchemy.orm import Session
 from app import models, schemas
-from app.core.utils.date_utils import D
 from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM
 
 

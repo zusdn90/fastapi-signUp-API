@@ -1,19 +1,8 @@
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, BINARY
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-
 from app.database.base_class import Base, BaseMixin
 from typing import Any, Union
-from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     Column,
-    Integer,
     String,
-    DateTime,
-    func,
-    Enum,
-    Boolean,
-    ForeignKey,
 )
 
 
@@ -39,7 +28,7 @@ class UserAuth(Base, BaseMixin):
 
     phone_number: Union[Any, Column] = Column(
         String(20), unique=True, nullable=False, comment="전화번호"
-    )    
+    )
     auth_number: Union[Any, Column] = Column(String(10), nullable=False, comment="인증번호")
 
     def __repr__(self) -> str:

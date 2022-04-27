@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class StatusCode:
     HTTP_500 = 500
     HTTP_400 = 400
@@ -28,18 +25,20 @@ class APIException(Exception):
     code: str
     msg: str
     detail: str
-    ex: Optional[Exception]
+    ex: Exception
 
     def __init__(
         self,
         *,
         status_code: int = StatusCode.HTTP_500,
         code: str = "000000",
-        detail: str = "",
-        ex: Optional[Exception] = None,
+        msg: str = None,
+        detail: str = None,
+        ex: Exception = None,
     ):
         self.status_code = status_code
         self.code = code
+        self.msg = msg
         self.detail = detail
         self.ex = ex
         super().__init__(ex)
@@ -106,14 +105,3 @@ class NotFoundException(APIException):
             detail="Not Found Error",
             ex=ex,
         )
-
-
-class AuthenticationException(APIException):
-    def __init__(self, ex: Exception = None):
-        super().__init__(
-            status_code=StatusCode.HTTP_401,
-            code=f"{StatusCode.HTTP_401}{'1'.zfill(4)}",
-            detail="Authentication Error",
-            ex=ex,
-        )
-  

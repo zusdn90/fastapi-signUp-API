@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import Optional
 from enum import Enum
 
 from pydantic import Field, validator
@@ -13,12 +13,25 @@ class LoginType(str, Enum):
     phone_number: str = "mobile"
 
 
-class Login(BaseModel):
-    id: str = "01012341234 or test@gmail.com"
-    password: str = "1234!!"
+class LoginBase(BaseModel):
+    id: str
+    password: str
 
+
+class Login(LoginBase):
     class Config:
-        orm_mode = True
+        schema_extra = {
+            "examples": {
+                "email": {
+                    "id": "hongildong@gmail.com",
+                    "password": "test!!!",
+                },
+                "phone_number": {
+                    "id": "01012341234",
+                    "password": "test!!!",
+                },
+            }
+        }
 
 
 class UserMe(BaseModel):

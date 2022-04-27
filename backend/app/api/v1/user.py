@@ -1,18 +1,14 @@
-import jwt
-from random import randint
-from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, Body
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
+from starlette.requests import Request
 
 from app import models, schemas
-from app.core.utils.date_utils import D
 from app.middlewares.custom_middleware import ExceptionRoute
 from app.core.errors.exceptions import CommonException
 from app.core.utils.logger import base_logger
-from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM
 from app.database.session import get_db
 from app.api.v1.helper import (
     is_user_exist,
@@ -50,7 +46,11 @@ responses = {
     summary="로그인",
 )
 async def login(
-    login_type: schemas.LoginType, user: schemas.Login, db: Session = Depends(get_db)
+    login_type: schemas.LoginType,
+    db: Session = Depends(get_db),
+    user: schemas.Login = Body(
+        ..., examples=schemas.Login.Config.schema_extra["examples"]
+    ),
 ):
     """
     `로그인 API`
@@ -89,10 +89,32 @@ async def login(
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
     token = dict(
-        Authorization=f"Bearer {create_access_token(data=schemas.Login.from_orm(user_instance).dict(exclude={'password',}),)}"
+        Authorization=f"JWT {create_access_token(data=schemas.UserToken.from_orm(user_instance).dict(exclude={'password',}),)}"
     )
 
     return token
+
+
+@router.post(
+    "/",
+    responses={
+        **responses,
+        200: {"model": schemas.UserMe},
+    },
+    status_code=200,
+    summary="유저 토큰 인증",
+)
+async def get_users(request: Request, db: Session = Depends(get_db)):
+    """
+    `유저 토큰 인증 API`
+    """
+    user = request.state.user
+    user_instance = (
+        db.query(models.User)
+        .filter(models.User.phone_number == user.phone_number)
+        .first()
+    )
+    return schemas.UserMe.from_orm(user_instance)
 
 
 @router.get(
@@ -102,11 +124,11 @@ async def login(
         200: {"model": schemas.UserMe},
     },
     status_code=200,
-    summary="회원정보 조회",
+    summary="유저 정보 상세조회",
 )
-async def get_users(_id: int, db: Session = Depends(get_db)):
+async def get_users(id: int, db: Session = Depends(get_db)):
     """
-    `회원정보 조회 API`
+    `유저 정보 상세조회 API`
     """
-    user_instance = db.query(models.User).filter(models.User.id == _id).first()
+    user_instance = db.query(models.User).filter(models.User.id == id).first()
     return schemas.UserMe.from_orm(user_instance)

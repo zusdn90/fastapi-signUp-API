@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 from typing import Optional, Dict, Any
 from pydantic import BaseSettings, PostgresDsn, validator
 

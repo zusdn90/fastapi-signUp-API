@@ -1,7 +1,4 @@
-import jwt
-import bcrypt
 from random import randint
-from datetime import datetime, timedelta
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, Body
 
@@ -9,11 +6,9 @@ from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
 from app import models, schemas
-from app.core.utils.date_utils import D
 from app.middlewares.custom_middleware import ExceptionRoute
 from app.core.errors.exceptions import CommonException
 from app.core.utils.logger import base_logger
-from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM
 from app.database.session import get_db
 from app.api.v1.helper import (
     is_user_exist,
@@ -62,7 +57,7 @@ async def mobile_auth(
     try:
         phone_number = params.phone_number
 
-        auth_instance = is_auth_exist(phone_number=phone_number)
+        auth_instance = is_auth_exist(db=db, phone_number=phone_number)
         auth_number = str(randint(100000, 500000))
 
         if phone_number == "" or phone_number is None:
@@ -92,7 +87,7 @@ async def mobile_auth(
     status_code=201,
     responses={
         **responses,
-        200: {"model": schemas.UserMe},
+        200: {"model": schemas.Token},
     },
     summary="회원가입",
 )
@@ -111,7 +106,7 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         password = create_item["password"]
 
         # 인증번호 확인
-        auth_instance = is_auth_exist(phone_number=phone_number)
+        auth_instance = is_auth_exist(db=db, phone_number=phone_number)
 
         if not auth_instance:
             raise CommonException(
@@ -152,7 +147,11 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     except CommonException as e:
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
-    return schemas.UserMe.from_orm(user_instance)
+    token = dict(
+        Authorization=f"JWT {create_access_token(data=schemas.UserToken.from_orm(user_instance).dict(exclude={'password',}),)}"
+    )
+
+    return token
 
 
 @router.post(
@@ -172,27 +171,35 @@ async def reset_password(
     `전화번호 인증 후 비밀번호 재설정`
     """
 
-    auth_instance = is_auth_exist(phone_number=phone_number)
-    if auth_instance.auth_number == params.auth_number:
-        user_instance = (
-            db.query(models.User)
-            .filter(models.User.phone_number == params.phone_number)
-            .first()
-        )
+    try:
+        auth_instance = is_auth_exist(db=db, phone_number=params.phone_number)
 
-        user_instance.password = get_hashed_password(
-            plain_text_password=params.password
-        )
-        db.add(user_instance)
-        db.commit()
-        db.refresh(user_instance)
+        if not auth_instance:
+            raise CommonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=" Invalid verification Phone number...",
+            )
+
+        if auth_instance.auth_number == params.auth_number:
+            user_instance = (
+                db.query(models.User)
+                .filter(models.User.phone_number == params.phone_number)
+                .first()
+            )
+
+            user_instance.password = get_hashed_password(
+                plain_text_password=params.password
+            )
+            db.add(user_instance)
+            db.commit()
+            db.refresh(user_instance)
+        else:
+            raise CommonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=" Invalid verification Auth number...",
+            )
+
+    except CommonException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
     return schemas.UserMe.from_orm(user_instance)
-
-
-def create_access_token(*, data: dict = None, expires_delta: int = None):
-    to_encode = data.copy()
-    if expires_delta:
-        to_encode.update({"exp": datetime.utcnow() + timedelta(hours=expires_delta)})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return encoded_jwt
