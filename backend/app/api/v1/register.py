@@ -15,6 +15,12 @@ from app.core.errors.exceptions import CommonException
 from app.core.utils.logger import base_logger
 from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM
 from app.database.session import get_db
+from app.api.v1.helper import (
+    is_user_exist,
+    is_auth_exist,
+    get_hashed_password,
+    create_access_token,
+)
 
 LOGGER = base_logger()
 router = APIRouter(route_class=ExceptionRoute)
@@ -45,7 +51,7 @@ responses = {
     summary="전화번호 인증",
 )
 async def mobile_auth(
-    params: schemas.UserPhoneNumberAuth,
+    params: schemas.UserPhoneNumber,
     db: Session = Depends(get_db),
 ):
     """
@@ -55,8 +61,8 @@ async def mobile_auth(
 
     try:
         phone_number = params.phone_number
-        auth_instance = db.query(models.UserAuth).filter(phone_number == phone_number)
-        auth_instance = auth_instance.first()
+
+        auth_instance = is_auth_exist(phone_number=phone_number)
         auth_number = str(randint(100000, 500000))
 
         if phone_number == "" or phone_number is None:
@@ -81,50 +87,12 @@ async def mobile_auth(
     return schemas.AuthNumber(auth_number=auth_number)
 
 
-# @router.post(
-#     "/token/auth",
-#     status_code=201,
-#     responses={
-#         **responses,
-#         200: {"model": schemas.Token},
-#     },
-#     summary="토근발급",
-# )
-# async def register(
-#     token: schemas.TokenCreate, db: Session = Depends(get_db)
-# ) -> JSONResponse:
-#     """
-#     `토근생성 API`
-#     """
-#     phone_number = token.phone_number
-#     users = db.query(models.User).filter(phone_number == phone_number)
-#     auth_instance = auth_instance.first()
-
-
-#     if not token.phone_number or not token.password:
-#         raise CommonException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Phone Number and PW must be provided.",
-#         )
-#     if db_user:
-#         raise CommonException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Phone Number already registered.",
-#         )
-#     new_user = crud.create_user(db=db, user=user)
-#     token = dict(
-#         Authorization=f"Bearer {create_access_token(data=UserToken.from_orm(new_user).dict(),)}"
-#     )
-
-#     return token
-
-
 @router.post(
     "/",
     status_code=201,
     responses={
         **responses,
-        200: {"model": schemas.Token},
+        200: {"model": schemas.UserMe},
     },
     summary="회원가입",
 )
@@ -137,48 +105,54 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
         phone_number = create_item["phone_number"]
         auth_number = create_item["auth_number"]
-        email = create_item["auth_number"]
+        email = create_item["email"]
         name = create_item["name"]
         nick_name = create_item["nick_name"]
         password = create_item["password"]
 
         # 인증번호 확인
-        auth_instance = db.query(models.UserAuth).filter(phone_number == phone_number)
-        auth_instance = auth_instance.first()
+        auth_instance = is_auth_exist(phone_number=phone_number)
+
+        if not auth_instance:
+            raise CommonException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=" Invalid verification Phone number...",
+            )
 
         if auth_instance.auth_number != auth_number:
             raise CommonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Not Invalid auth number ...",
+                detail="Invalid verification auth number ...",
             )
 
         # 사용자 확인
-        user_instance = is_user_exist(db=db, phone_number=phone_number)
+        is_phone_number = is_user_exist(db=db, _id=phone_number)
+        is_email = is_user_exist(db=db, _id=email, login_type="email")
 
-        if user_instance:
+        if is_phone_number or is_email:
             raise CommonException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="already existing user...",
             )
 
-        user = models.User()
-        user.nick_name = nick_name
-        user.email = email
-        user.name = name
-        user.phone_number = phone_number
-        user.password = get_hashed_password(plain_text_password=password)
+        user_instance = models.User()
+        user_instance.nick_name = nick_name
+        user_instance.email = email
+        user_instance.name = name
+        user_instance.phone_number = phone_number
+        user_instance.password = get_hashed_password(plain_text_password=password)
 
-        token = dict(
-            Authorization=f"Bearer {create_access_token(data=schemas.UserCreate.from_orm(user).dict(),)}"
-        )
+        if user_instance:
+            db.add(user_instance)
+            db.commit()
+            db.refresh(user_instance)
+        else:
+            db.rollback()
 
-        db.add(user)
-        db.commit()
-        db.refresh(user)
     except CommonException as e:
         return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
 
-    return token
+    return schemas.UserMe.from_orm(user_instance)
 
 
 @router.post(
@@ -188,7 +162,7 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         200: {"model": schemas.UserMe},
     },
     status_code=200,
-    summary="비밀번호 찾기",
+    summary="비밀번호 찾기(재설정)",
 )
 async def reset_password(
     params: schemas.UserFindPwd, db: Session = Depends(get_db)
@@ -198,11 +172,14 @@ async def reset_password(
     `전화번호 인증 후 비밀번호 재설정`
     """
 
-    auth_instance = db.query(models.UserAuth).filter(phone_number == phone_number)
-    auth_instance = auth_instance.first()
-
+    auth_instance = is_auth_exist(phone_number=phone_number)
     if auth_instance.auth_number == params.auth_number:
-        user_instance = models.User()
+        user_instance = (
+            db.query(models.User)
+            .filter(models.User.phone_number == params.phone_number)
+            .first()
+        )
+
         user_instance.password = get_hashed_password(
             plain_text_password=params.password
         )
@@ -210,24 +187,7 @@ async def reset_password(
         db.commit()
         db.refresh(user_instance)
 
-    return user_instance
-
-
-def is_user_exist(db: Session, phone_number: str):
-    user = db.query(models.User).filter(phone_number == phone_number)
-    user = user.first()
-
-    if user:
-        return True
-    return False
-
-
-def get_hashed_password(plain_text_password):
-    return bcrypt.hashpw(plain_text_password.encode("utf-8"), bcrypt.gensalt())
-
-
-def verify_password(plain_text_password, hashed_password):
-    return bcrypt.checkpw(plain_text_password.encode("utf-8"), hashed_password)
+    return schemas.UserMe.from_orm(user_instance)
 
 
 def create_access_token(*, data: dict = None, expires_delta: int = None):

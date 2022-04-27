@@ -39,10 +39,7 @@ class UserAuth(Base, BaseMixin):
 
     phone_number: Union[Any, Column] = Column(
         String(20), unique=True, nullable=False, comment="전화번호"
-    )
-    email: Union[Any, Column] = Column(
-        String(50), unique=True, nullable=True, comment="이메일"
-    )
+    )    
     auth_number: Union[Any, Column] = Column(String(10), nullable=False, comment="인증번호")
 
     def __repr__(self) -> str:
