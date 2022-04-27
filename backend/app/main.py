@@ -52,6 +52,14 @@ def get_app() -> FastAPI:
 app = get_app()
 
 
+@app.get("/", summary="기본 페이지")
+def get_index():
+    """
+    ### 기본 페이지
+    """
+    return "Hello My name is Hyunwoo Hong~~"
+
+
 @app.get("/health", summary="API 서버 상태체크")
 def get_health():
     """
