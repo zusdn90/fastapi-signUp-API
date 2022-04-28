@@ -9,19 +9,33 @@ class Token(BaseModel):
 
 
 class UserToken(BaseModel):
-    name: Optional[str] = Field(None, description="이름")
-    email: Optional[str] = Field(None, description="이메일")
+    name: str = Field(..., description="이름")
+    email: str = Field(..., description="이메일")
     nick_name: Optional[str] = Field(None, description="닉네임")
-    phone_number: Optional[str] = Field(None, description="전화번호")
+    phone_number: str = Field(..., description="전화번호")
 
     class Config:
         orm_mode = True
 
 
 class UserFindPwd(BaseModel):
-    phone_number: str = "01012341234"
-    auth_number: str = "349503"
-    password: str = "1234!!"
+    phone_number: str
+    auth_number: str
+    password: str
+
+    class Config:
+        schema_extra = {
+            "examples": {
+                "phone_number": {
+                    "summary": "비밀번호 재설정 입력 예시",
+                    "value": {
+                        "phone_number": "01012341234",
+                        "auth_number": "343832",
+                        "password": "newpassword!!",
+                    },
+                }
+            }
+        }
 
 
 class AuthNumber(BaseModel):

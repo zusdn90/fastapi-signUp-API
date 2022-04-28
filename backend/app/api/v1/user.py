@@ -37,7 +37,7 @@ responses = {
 
 
 @router.post(
-    "/login/{schemas.LoginType}",
+    "/login/{login_type}",
     status_code=200,
     responses={
         **responses,

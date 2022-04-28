@@ -46,7 +46,9 @@ responses = {
     summary="전화번호 인증",
 )
 async def mobile_auth(
-    params: schemas.UserPhoneNumber,
+    params: schemas.UserPhoneNumber = Body(
+        ..., examples=schemas.UserPhoneNumber.Config.schema_extra["examples"]
+    ),
     db: Session = Depends(get_db),
 ):
     """
@@ -91,7 +93,12 @@ async def mobile_auth(
     },
     summary="회원가입",
 )
-async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+async def register(
+    user: schemas.UserCreate = Body(
+        ..., examples=schemas.UserCreate.Config.schema_extra["examples"]
+    ),
+    db: Session = Depends(get_db),
+):
     """
     `회원가입 API`
     """
@@ -164,7 +171,10 @@ async def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     summary="비밀번호 찾기(재설정)",
 )
 async def reset_password(
-    params: schemas.UserFindPwd, db: Session = Depends(get_db)
+    params: schemas.UserFindPwd = Body(
+        ..., examples=schemas.UserFindPwd.Config.schema_extra["examples"]
+    ),
+    db: Session = Depends(get_db),
 ) -> JSONResponse:
     """
     `비밀번호 찾기(재설정) API`\n

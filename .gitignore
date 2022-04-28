@@ -128,4 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-.vscode/*
+/.vscode/*
+/backend/migrations/local/versions
+/.ide/*

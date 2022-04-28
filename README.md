@@ -51,7 +51,6 @@
    회원가입 시 인증받은 번호(auth_number)를 파라미터로 같이 보낸다.
    
    url: v1/register - POST
- 
 ```
 ```
 3. 회원가입이 완료되면 로그인을 할 수 있다.
@@ -65,7 +64,6 @@
    url: v1/users/ - POST header: Authorization JWT xxxxxxxxxxxxxxxxx
    
    해당 API는 swagger에서 테스트가 불가합니다. 토큰값을 리퀘스트 헤더에 넣어줘야해서 Postman이나 Insomnia에서 테스트 할 수 있습니다.
-   
 ```
 ```
 5. 유저 ID값을 받아오면 유져 상세 정보조회 API를 요청해서 정보를 확인한다.
