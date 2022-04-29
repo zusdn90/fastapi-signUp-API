@@ -3,7 +3,7 @@ import bcrypt
 
 from sqlalchemy.orm import Session
 from app import models, schemas
-from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM
+from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
 
 def is_user_exist(db: Session, _id: str, login_type="phone_number"):
