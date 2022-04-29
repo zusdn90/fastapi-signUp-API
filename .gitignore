@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 /.vscode
-/backend/migrations/local/versions/
+# /backend/migrations/local/versions/
 /.ide
