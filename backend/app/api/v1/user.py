@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, Body
+from fastapi.security import OAuth2PasswordBearer
 
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
@@ -19,6 +20,7 @@ from app.api.v1.helper import (
 
 LOGGER = base_logger()
 router = APIRouter(route_class=ExceptionRoute)
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class HTTPError(BaseModel):
@@ -126,7 +128,10 @@ async def get_users(request: Request, db: Session = Depends(get_db)):
     status_code=200,
     summary="유저 정보 상세조회",
 )
-async def get_users(id: int, db: Session = Depends(get_db)):
+async def get_users(
+    id: int,
+    db: Session = Depends(get_db),
+):
     """
     `유저 정보 상세조회 API`
     """

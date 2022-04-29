@@ -21,7 +21,7 @@
 ### 개발 환경
 - Python 3.8
 - FastAPI
-- SQLAlchemy 
+- SQLAlchemy (ORM)
 - Postgresql 12
 - docker-compose
 - IDE: vscoode
@@ -35,6 +35,7 @@
 ```
 ```
 3. cd scripts ./migratinos.sh (DB migration)
+   유저, 인증 테이블 생성
 ```
 
 ## swagger url: http://localhost:8000/docs
@@ -48,7 +49,7 @@
 ```
 ```
 2. 전화번호 인증이 완료되면 회원가입을 진행한다. 
-   회원가입 시 인증받은 번호(auth_number)를 파라미터로 같이 보낸다.
+   회원가입 시 인증받은 번호(auth_number)를 파라미터로 같이 보낸다. (인증된 유저인지 확인)
    
    url: v1/register - POST
 ```
@@ -59,14 +60,14 @@
    url: v1/users/login/{login_type} - POST
 ```
 ```
-4. 로그인이 완료되면 토큰이 리턴되는데 해당 토큰으로 유저 인증 API를 호출해서 유저 ID값을 받아온다.
+4. 로그인이 완료되면 토큰이 리턴되는데 해당 토큰으로 유저 인증 API를 호출해서 유저 ID값을 받아온다. (유저ID로 정보조회)
 
    url: v1/users/ - POST header: Authorization JWT xxxxxxxxxxxxxxxxx
    
    해당 API는 swagger에서 테스트가 불가합니다. 토큰값을 리퀘스트 헤더에 넣어줘야해서 Postman이나 Insomnia에서 테스트 할 수 있습니다.
 ```
 ```
-5. 유저 ID값을 받아오면 유져 상세 정보조회 API를 요청해서 정보를 확인한다.
+5. 유저 ID값을 받아오면 유져 정보 조회 API를 요청해서 정보를 확인한다.
 
    url: v1/users/{id} - GET header: Authorization JWT xxxxxxxxxxxxxxxxx
    
