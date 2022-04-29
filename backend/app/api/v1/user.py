@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, Body
 from fastapi.security import OAuth2PasswordBearer
 
@@ -16,6 +15,7 @@ from app.api.v1.helper import (
     get_hashed_password,
     verify_password,
     create_access_token,
+    RESPONSE
 )
 
 LOGGER = base_logger()
@@ -23,26 +23,11 @@ router = APIRouter(route_class=ExceptionRoute)
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-class HTTPError(BaseModel):
-    detail: str
-
-    class Config:
-        schema_extra = {
-            "example": {"detail": "Exception raised."},
-        }
-
-
-responses = {
-    400: {"model": HTTPError, "description": "Bad request"},
-    500: {"model": HTTPError, "description": "Internal server error"},
-}
-
-
 @router.post(
     "/login/{login_type}",
     status_code=200,
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.Token},
     },
     summary="로그인",
@@ -100,7 +85,7 @@ async def login(
 @router.post(
     "/",
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.UserMe},
     },
     status_code=200,
@@ -122,7 +107,7 @@ async def get_users(request: Request, db: Session = Depends(get_db)):
 @router.get(
     "/{id}",
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.UserMe},
     },
     status_code=200,

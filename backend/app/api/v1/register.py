@@ -1,5 +1,4 @@
 from random import randint
-from pydantic import BaseModel
 from fastapi import APIRouter, Depends, status, Body
 
 from sqlalchemy.orm import Session
@@ -15,31 +14,17 @@ from app.api.v1.helper import (
     is_auth_exist,
     get_hashed_password,
     create_access_token,
+    RESPONSE,
 )
 
 LOGGER = base_logger()
 router = APIRouter(route_class=ExceptionRoute)
 
 
-class HTTPError(BaseModel):
-    detail: str
-
-    class Config:
-        schema_extra = {
-            "example": {"detail": "Exception raised."},
-        }
-
-
-responses = {
-    400: {"model": HTTPError, "description": "Bad request"},
-    500: {"model": HTTPError, "description": "Internal server error"},
-}
-
-
 @router.post(
     "/auth",
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.AuthNumber},
     },
     status_code=200,
@@ -88,7 +73,7 @@ async def mobile_auth(
     "/",
     status_code=201,
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.Token},
     },
     summary="회원가입",
@@ -164,7 +149,7 @@ async def register(
 @router.post(
     "/reset/password",
     responses={
-        **responses,
+        **RESPONSE,
         200: {"model": schemas.UserMe},
     },
     status_code=200,

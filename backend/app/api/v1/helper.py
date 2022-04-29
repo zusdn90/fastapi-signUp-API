@@ -2,8 +2,22 @@ import jwt
 import bcrypt
 
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from app import models, schemas
 from app.core.common.consts import JWT_SECRET, JWT_ALGORITHM, JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+
+class HTTPError(BaseModel):
+    detail: str
+
+    class Config:
+        schema_extra = {
+            "example": {"detail": "Exception raised."},
+        }
+
+RESPONSE = {
+    400: {"model": HTTPError, "description": "Bad request"},
+    500: {"model": HTTPError, "description": "Internal server error"},
+}
 
 
 def is_user_exist(db: Session, _id: str, login_type="phone_number"):
