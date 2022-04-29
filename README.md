@@ -26,7 +26,7 @@
 - docker-compose
 - IDE: vscoode
 
-### 로컬 서버 구동 / DB 테이블 생성
+### 로컬 서버 구동 / DB 테이블 생성 / 테스트 코드 실행
 ```
 1. docker-compose build && docker-compose up
 ```
@@ -36,6 +36,9 @@
 ```
 3. cd scripts ./migratinos.sh (DB migration)
    유저, 인증 테이블 생성
+```
+```
+4. cd scripts ./test.sh (유닛 테스트 실행)
 ```
 
 ## swagger url: http://localhost:8000/docs
